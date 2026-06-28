@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack Pro - Personal Finance Tracker</title>
+    <link rel="stylesheet" href="style.css?v=20260628">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">💰</div>
+                <div class="logo-text">
+                    <h1>FinTrack Pro</h1>
+                    <p>Manage your Finance</p>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="settings">
+                    <span class="icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <header class="header">
+                <h2>Financial Overview</h2>
+                <p class="subtitle">Real-time tracking application</p>
+            </header>
+
+            <div class="content-wrapper">
+                <div class="dashboard-section" id="dashboard">
+                    <div class="cards-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-icon">💳</span>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">Current Balance</h3>
+                                <p class="card-value" id="current-balance">$0.00</p>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-icon">📈</span>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">Total Income</h3>
+                                <p class="card-value income" id="total-income">$0.00</p>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-icon">📉</span>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">Total Expense</h3>
+                                <p class="card-value expense" id="total-expense">$0.00</p>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-icon">📋</span>
+                            </div>
+                            <div class="card-body">
+                                <h3 class="card-title">Total Transactions</h3>
+                                <p class="card-value" id="total-transactions">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-section">
+                        <h3>Cash Flow Analysis</h3>
+                        <canvas id="cashFlowChart"></canvas>
+                    </div>
+
+                    <div class="transactions-section">
+                        <div class="transactions-header">
+                            <h3>All Transactions</h3>
+                            <button class="btn btn-primary" id="add-transaction-btn">+ Add Transaction</button>
+                        </div>
+
+                        <div class="transactions-controls">
+                            <div class="search-box">
+                                <input type="text" id="search-input" placeholder="Search transactions...">
+                                <span class="search-icon">🔍</span>
+                            </div>
+                            <select id="filter-select" class="filter-select">
+                                <option value="">All Types</option>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                        </div>
+
+                        <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>DATE</th>
+                                    <th>DESCRIPTION</th>
+                                    <th>CATEGORY</th>
+                                    <th>AMOUNT</th>
+                                    <th>ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-body">
+                            </tbody>
+                        </table>
+
+                        <div class="empty-state" id="empty-state">
+                            <p>No transactions yet. Add one to get started!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section" id="settings" style="display: none;">
+                    <div class="settings-card">
+                        <h3>Preferences</h3>
+                        
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <label>Dark Mode</label>
+                                <p class="settings-desc">Enable dark theme</p>
+                            </div>
+                            <button type="button" class="theme-toggle-btn" id="dark-mode-toggle" aria-pressed="false">Off</button>
+                        </div>
+
+                        <div class="settings-item">
+                            <div class="settings-label">
+                                <label>Currency</label>
+                                <p class="settings-desc">Select your preferred currency</p>
+                            </div>
+                            <select id="currency-select" class="currency-select">
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="INR">INR (₹)</option>
+                                <option value="JPY">JPY (¥)</option>
+                            </select>
+                        </div>
+
+                        <div class="settings-actions">
+                            <button class="btn btn-danger" id="reset-data-btn">🗑️ Reset All Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="preferences-sidebar">
+            <h4>Preferences</h4>
+            <div class="preferences-item">
+                <label>Dark Mode</label>
+                <button type="button" class="theme-toggle-btn small" id="dark-mode-toggle-right" aria-pressed="false">Off</button>
+            </div>
+            <button class="btn btn-danger btn-small" id="reset-data-btn-right">🗑️ Reset All Data</button>
+        </aside>
+    </div>
+
+    <div class="modal" id="transaction-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add Transaction</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="transaction-form">
+                <div class="form-group">
+                    <label for="trans-date">Date</label>
+                    <input type="date" id="trans-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="trans-type">Type</label>
+                    <select id="trans-type" required>
+                        <option value="">Select Type</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="trans-category">Category</label>
+                    <select id="trans-category" required>
+                        <option value="">Select Category</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="trans-description">Description</label>
+                    <input type="text" id="trans-description" placeholder="Enter description" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="trans-amount">Amount</label>
+                    <input type="number" id="trans-amount" placeholder="0.00" step="0.01" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js?v=20260628"></script>
+</body>
+</html>
