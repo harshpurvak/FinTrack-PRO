@@ -3,6 +3,7 @@ const appState = {
     currentCurrency: 'USD',
     darkMode: false,
     editingTransactionId: null,
+    currentUser: null,
 };
 
 // Chart instance ,stores the chart object
@@ -15,6 +16,8 @@ const categories = {
 };
 
 // DOM ELEMENTS
+const appShell = document.getElementById('app-shell');
+const loggedInUser = document.getElementById('logged-in-user');
 const dashboard = document.getElementById('dashboard');
 const settings = document.getElementById('settings');
 const navItems = document.querySelectorAll('.nav-item');
@@ -37,10 +40,20 @@ const currencySelect = document.getElementById('currency-select');
 // INITIALIZATION
 function init() {
     console.log('FinTrack Pro initialized');
-    
-    loadData();
+
     setupEventListeners();
-    updateDashboard();
+    window.fintrackAuth.init({
+        appState,
+        onLogin: showApp,
+        onBeforeLogout: saveData,
+        onLogout: resetAppAfterLogout
+    });
+
+    if (appState.currentUser) {
+        showApp();
+    } else {
+        window.fintrackAuth.showAuth();
+    }
 }
 //event listners
 function setupEventListeners() {
@@ -93,6 +106,37 @@ function setupEventListeners() {
     if (currencySelect) {
         currencySelect.addEventListener('change', handleCurrencyChange);
     }
+}
+
+function showApp() {
+    window.fintrackAuth.hideAuth();
+    appShell.hidden = false;
+    loggedInUser.textContent = appState.currentUser.name;
+    loadData();
+    updateDashboard();
+}
+
+function resetAppAfterLogout() {
+    appState.transactions = [];
+    appState.currentCurrency = 'USD';
+    appState.editingTransactionId = null;
+
+    if (cashFlowChart) {
+        cashFlowChart.destroy();
+        cashFlowChart = null;
+    }
+
+    appShell.hidden = true;
+}
+
+function getCurrentUserDataKey() {
+    return `fintrackData:${appState.currentUser.userKey}`;
+}
+
+function escapeHTML(value) {
+    const temp = document.createElement('div');
+    temp.textContent = String(value);
+    return temp.innerHTML;
 }
 // Navigation
 function navigateTo(page) {
@@ -310,8 +354,8 @@ function updateTransactionsTable() {
     tbody.innerHTML = sorted.map(transaction => `
         <tr data-type="${transaction.type}">
             <td>${formatDate(transaction.date)}</td>
-            <td>${transaction.description}</td>
-            <td><span class="trans-category">${transaction.category}</span></td>
+            <td>${escapeHTML(transaction.description)}</td>
+            <td><span class="trans-category">${escapeHTML(transaction.category)}</span></td>
             <td class="trans-amount ${transaction.type}">${transaction.type === 'income' ? '+' : '-'}${formatCurrency(transaction.amount)}</td>
             <td class="trans-actions">
                 <button class="btn-small btn-edit" onclick="openTransactionModal(${transaction.id})">Edit</button>
@@ -415,29 +459,52 @@ function updateCashFlowChart(income, expense) {
 }
 // localStorage
 function saveData() {
-    localStorage.setItem('fintrackData', JSON.stringify({
+    if (!appState.currentUser) {
+        return;
+    }
+
+    localStorage.setItem(getCurrentUserDataKey(), JSON.stringify({
         transactions: appState.transactions,
         currentCurrency: appState.currentCurrency,
         darkMode: appState.darkMode
     }));
 }
 function loadData() {
-    const saved = localStorage.getItem('fintrackData');
-    if (saved) {
-        const data = JSON.parse(saved);
-        appState.transactions = data.transactions || [];
-        appState.currentCurrency = data.currentCurrency || 'USD';
-        appState.darkMode = Boolean(data.darkMode);
+    if (!appState.currentUser) {
+        return;
     }
+
+    const saved = localStorage.getItem(getCurrentUserDataKey());
+
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            appState.transactions = Array.isArray(data.transactions) ? data.transactions : [];
+            appState.currentCurrency = data.currentCurrency || 'USD';
+            appState.darkMode = Boolean(data.darkMode);
+        } catch (error) {
+            appState.transactions = [];
+            appState.currentCurrency = 'USD';
+            appState.darkMode = false;
+        }
+    } else {
+        appState.transactions = [];
+        appState.currentCurrency = 'USD';
+        appState.darkMode = false;
+    }
+
     if (currencySelect) {
         currencySelect.value = appState.currentCurrency;
     }
+
     document.body.classList.toggle('dark-mode', appState.darkMode);
     if (darkModeToggle) {
-        darkModeToggle.checked = appState.darkMode;
+        darkModeToggle.setAttribute('aria-pressed', String(appState.darkMode));
+        darkModeToggle.textContent = appState.darkMode ? 'On' : 'Off';
     }
     if (darkModeToggleRight) {
-        darkModeToggleRight.checked = appState.darkMode;
+        darkModeToggleRight.setAttribute('aria-pressed', String(appState.darkMode));
+        darkModeToggleRight.textContent = appState.darkMode ? 'On' : 'Off';
     }
 }
 
