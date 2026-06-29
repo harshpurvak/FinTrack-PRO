@@ -54,11 +54,9 @@ const fintrackAuth = (() => {
         if (!userId) {
             return 'User ID is required.';
         }
-
         if (userId.length < 3) {
             return 'User ID must be at least 3 characters.';
         }
-
         if (!/^[a-zA-Z0-9_]+$/.test(userId)) {
             return 'Use only letters, numbers, and underscore.';
         }
@@ -70,7 +68,6 @@ const fintrackAuth = (() => {
         if (!password) {
             return 'Password is required.';
         }
-
         if (password.length < 6) {
             return 'Password must be at least 6 characters.';
         }
@@ -85,7 +82,6 @@ const fintrackAuth = (() => {
         if (errorElement) {
             errorElement.textContent = message;
         }
-
         if (field) {
             field.setAttribute('aria-invalid', message ? 'true' : 'false');
         }
