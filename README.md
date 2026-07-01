@@ -10,4 +10,4 @@ The project is divided into simple files. The index.html file contains the main 
 
 To run the project, no installation is needed. You can simply open the project folder and double click index.html. The app will open directly in the browser.
 
-This is a learning project, so the authentication is made using localStorage only. It is useful for understanding frontend logic, validation, localStorage, and project structure, but it should not be used as real secure login for a production finance application.
+This is a learning project, so the authentication is made using localStorage only. It is useful for understanding frontend logic, validation, localStorage, and project structure, but it should not be used as real secure login for a production finance application
